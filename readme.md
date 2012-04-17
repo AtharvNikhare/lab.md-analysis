@@ -4,11 +4,11 @@
 
 Unfortunately there are two hiccups in the installation process. It is necessary to install readline by hand using easy_install instead of pip, and matplotlib must be installed *after* `pip install -r requirements.txt`
 
-    $ python vendor/virtualenv.py script-md
-    $ source script-md/bin/activate
-    (script-md)$ easy_install readline
-    (script-md)$ pip install -r requirements.txt
-    (script-md)$ pip install matplotlib
+    $ python vendor/virtualenv.py lab-md-analysis
+    $ source lab-md-analysis/bin/activate
+    (lab-md-analysis)$ easy_install readline
+    (lab-md-analysis)$ pip install -r requirements.txt
+    (lab-md-analysis)$ pip install matplotlib
 
 Once the smoke test passes, install the lab repo:
 
@@ -20,7 +20,7 @@ Once the smoke test passes, install the lab repo:
 
 ## Matplotlib smoke test:
 
-    (script-md)$ ipython --pylab
+    (lab-md-analysis)$ ipython --pylab
     ...
     In [1]: x = randn(100000)
 

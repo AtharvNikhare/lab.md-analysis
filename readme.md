@@ -2,13 +2,26 @@
 
 ## To get started:
 
-Unfortunately there are two hiccups in the installation process. It is necessary to install readline by hand using easy_install instead of pip, and matplotlib must be installed *after* `pip install -r requirements.txt`
+Unfortunately there are some manual steps in the installation process. 
+
+First (assuming you are using OS X and Homebrew) install ZeroMQ and gfortran:
+
+    $ brew install zeromq
+    $ brew install gfortran
+
+Create an isolated virtualenv called 'lab-md-analysis' and activate it:
 
     $ python vendor/virtualenv.py lab-md-analysis
     $ source lab-md-analysis/bin/activate
+    
+It is necessary to install readline by hand using easy_install instead of pip, and matplotlib must be installed *after* `pip install -r requirements.txt`
+
     (lab-md-analysis)$ easy_install readline
     (lab-md-analysis)$ pip install -r requirements.txt
     (lab-md-analysis)$ pip install matplotlib
+
+(You may also find that it's necessary to remove scipy from requirements.txt and install it via
+`pip install scipy` at the end.)
 
 Once the smoke test passes, install the lab repo:
 

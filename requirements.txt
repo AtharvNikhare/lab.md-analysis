@@ -3,3 +3,4 @@ numpy==1.6.2
 nose
 pyzmq >= 2.1.4
 tornado >= 2.1
+scipy

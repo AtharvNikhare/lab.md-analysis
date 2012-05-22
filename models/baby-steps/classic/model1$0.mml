@@ -314,25 +314,25 @@
   <void property="properties"> 
    <void method="put"> 
     <string>filename</string> 
-    <string>first test model$0.mml</string> 
+    <string>model1$0.mml</string> 
    </void> 
    <void method="put"> 
     <string>date</string> 
     <object class="java.util.Date"> 
-     <long>1337709078000</long> 
+     <long>1337710368000</long> 
     </object> 
    </void> 
    <void method="put"> 
     <string>url</string> 
-    <string>/Users/rklancer/dev/lab/lab.legacy-mw-content/first test model$0.mml</string> 
+    <string>/Users/rklancer/dev/lab/lab.md-analysis/models/baby-steps/classic/model1$0.mml</string> 
    </void> 
    <void method="put"> 
     <string>size</string> 
-    <long>11601</long> 
+    <long>11602</long> 
    </void> 
    <void method="put"> 
     <string>codebase</string> 
-    <string>/Users/rklancer/dev/lab/lab.legacy-mw-content</string> 
+    <string>/Users/rklancer/dev/lab/lab.md-analysis/models/baby-steps/classic</string> 
    </void> 
   </void> 
   <void property="quantumRule"> 

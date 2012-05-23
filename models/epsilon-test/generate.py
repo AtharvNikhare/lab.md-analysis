@@ -9,6 +9,7 @@ from scipy.optimize import fsolve
 import pystache
 import os
 import errno
+import subprocess
 
 # some conversion constants for later
 JOULES_PER_EV = 1.6021770000000003e-19
@@ -152,6 +153,9 @@ def generate_mw_files(num, X, Y, VX, VY):
   f.write(mml)
   f.close()
 
+def convert_mml_file(num):
+  subprocess.call(['./convert.coffee', 'classic/model{}$0.mml'.format(num), 'nextgen/model{}.json'.format(num)])
+
 # Choose an initial energy so the final temperature is some reasonable number.
 # Note the equilibrium temperature will settle above T because the equilibrium
 # value of the potential energy will be less that zero.
@@ -172,5 +176,6 @@ for ke_to_pe_ratio in np.logspace(-2, 2, 5, base=3):
   (hotX, hotY, hotVX, hotVY)     = generate_hot_atoms(ke_fraction * te)
   
   generate_mw_files(model_num, coldX + hotX, coldY + hotY, coldVX + hotVX, coldVY + hotVY)
+  convert_mml_file(model_num)
   f.write("{}\t{:.4f}\n".format(model_num, ke_fraction*te))
   model_num += 1

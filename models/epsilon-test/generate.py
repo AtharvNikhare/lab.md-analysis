@@ -141,7 +141,12 @@ def generate_mw_files(num, X, Y, VX, VY):
 
   mml = renderer.render_path('model$0.mml.mustache', {
     'number_of_particles': len(atoms),
-    'atoms': atoms
+    'epsilon': epsilon,
+    'sigma':   100 * sigma,
+    'mass':    mass / 120,
+    'width':   width * 100,
+    'height':  height * 100,
+    'atoms':   atoms
   })
   f = open('classic/model{}$0.mml'.format(num), 'w')
   f.write(mml)

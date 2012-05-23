@@ -159,7 +159,18 @@ te = 2 * nx * ny * kB * T     # eV
 
 print "target energy = {:.4f} eV\n".format(te)
 
-(coldX, coldY, coldVX, coldVY) = generate_cold_atoms(te/2)
-(hotX, hotY, hotVX, hotVY)     = generate_hot_atoms(te/2)
+f = open('index.txt', 'w')
+f.write("number of particles = {}\n".format(nx*ny*2))
+f.write("total energy = {:.4f}\n\n".format(te))
+f.write("model #\tinitial KE\n")
 
-generate_mw_files(1, coldX + hotX, coldY + hotY, coldVX + hotVX, coldVY + hotVY)
+model_num = 1
+for ke_to_pe_ratio in np.logspace(-2, 2, 5, base=3):
+  ke_fraction = ke_to_pe_ratio / (ke_to_pe_ratio + 1)
+
+  (coldX, coldY, coldVX, coldVY) = generate_cold_atoms(te - ke_fraction*te)
+  (hotX, hotY, hotVX, hotVY)     = generate_hot_atoms(ke_fraction * te)
+  
+  generate_mw_files(model_num, coldX + hotX, coldY + hotY, coldVX + hotVX, coldVY + hotVY)
+  f.write("{}\t{:.4f}\n".format(model_num, ke_fraction*te))
+  model_num += 1

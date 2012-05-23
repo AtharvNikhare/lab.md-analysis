@@ -6,6 +6,10 @@ import scipy
 
 from scipy.optimize import fsolve
 
+import pystache
+import os
+import errno
+
 # some conversion constants for later
 JOULES_PER_EV = 1.6021770000000003e-19
 KILOGRAMS_PER_DALTON = 1.66054e-27
@@ -59,7 +63,6 @@ def pe(l):
   return pe
 
 
-
 def generate_cold_atoms(initial_pe):
 
   f = lambda r: pe(r) - initial_pe
@@ -79,7 +82,6 @@ def generate_cold_atoms(initial_pe):
   VY = [0.] * (nx*ny)
 
   return (X, Y, VX, VY)
-
 
 
 def generate_hot_atoms(ke):
@@ -109,6 +111,34 @@ def generate_hot_atoms(ke):
   return (X, Y, VX, VY)
 
 
+def mkdir_p(path):
+  try:
+    os.makedirs(path)
+  except OSError as exc:
+    if exc.errno == errno.EEXIST:
+        pass
+    else: raise
+
+
+def generate_mw_files(num, X, Y, VX, VY):
+  
+  mkdir_p('classic')
+  renderer = pystache.Renderer()
+
+  cml = renderer.render_path('model.cml.mustache', { 'model_number': num })
+  f = open("classic/model{}.cml".format(num), 'w')
+  f.write(cml)
+  f.close()
+
+  atoms =[{'rx': 100*x, 'ry': 100*y, 'vx': 100*vx, 'vy': 100*vy} for (x, y, vx, vy) in zip(X, Y, VX, VY)]
+  mml = renderer.render_path('model$0.mml.mustache', {
+    'number_of_particles': len(atoms),
+    'atoms': atoms
+  })
+  f = open("classic/model{}$0.mml".format(num), 'w')
+  f.write(mml)
+  f.close()
+
 # Choose an initial energy so the final temperature is some reasonable number.
 # Note the equilibrium temperature will settle above T because the equilibrium
 # value of the potential energy will be less that zero.
@@ -119,7 +149,4 @@ print "target energy = {:.4f} eV\n".format(te)
 (coldX, coldY, coldVX, coldVY) = generate_cold_atoms(te/2)
 (hotX, hotY, hotVX, hotVY)     = generate_hot_atoms(te/2)
 
-print coldX + hotX
-print coldY + hotY
-print coldVX + hotVX
-print coldVY + hotVY
+generate_mw_files(1, coldX + hotX, coldY + hotY, coldVX + hotVX, coldVY + hotVY)

@@ -327,7 +327,7 @@
    </void> 
    <void method="put"> 
     <string>url</string> 
-    <string>/Users/rklancer/dev/lab/lab.md-analysis/models/baby-steps/classic/model1$0.mml</string> 
+    <string>/Users/rklancer/dev/lab/lab.md-analysis/models/epsilon-test/classic/model1$0.mml</string> 
    </void> 
    <void method="put"> 
     <string>size</string> 
@@ -335,7 +335,7 @@
    </void> 
    <void method="put"> 
     <string>codebase</string> 
-    <string>/Users/rklancer/dev/lab/lab.md-analysis/models/baby-steps/classic</string> 
+    <string>/Users/rklancer/dev/lab/lab.md-analysis/models/epsilon-test/classic</string> 
    </void> 
   </void> 
   <void property="quantumRule"> 

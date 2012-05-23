@@ -126,16 +126,22 @@ def generate_mw_files(num, X, Y, VX, VY):
   renderer = pystache.Renderer()
 
   cml = renderer.render_path('model.cml.mustache', { 'model_number': num })
-  f = open("classic/model{}.cml".format(num), 'w')
+  f = open('classic/model{}.cml'.format(num), 'w')
   f.write(cml)
   f.close()
 
-  atoms =[{'rx': 100*x, 'ry': 100*y, 'vx': 100*vx, 'vy': 100*vy} for (x, y, vx, vy) in zip(X, Y, VX, VY)]
+  atoms = [{
+    'rx': 100*x, 
+    'ry': 100*y, 
+    'vx': 100*vx, 
+    'vy': 100*vy
+    } for (x, y, vx, vy) in zip(X, Y, VX, VY)]
+
   mml = renderer.render_path('model$0.mml.mustache', {
     'number_of_particles': len(atoms),
     'atoms': atoms
   })
-  f = open("classic/model{}$0.mml".format(num), 'w')
+  f = open('classic/model{}$0.mml'.format(num), 'w')
   f.write(mml)
   f.close()
 

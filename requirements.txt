@@ -4,3 +4,4 @@ nose
 pyzmq >= 2.1.4
 tornado >= 2.1
 scipy
+pystache

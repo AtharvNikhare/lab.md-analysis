@@ -2,53 +2,156 @@ Characterization and Testing of Next Gen MW Physics
 
 ---
 
-We want to characterize the behavior of the Next Gen MW physics engine and to create automated tests which allow us to verify the correctness of the engine as we continue developing it. These are two somewhat different tasks. Characterization tests of a system produce graphs or charts and test a wide range of parameters, so that experts can reason about the system. On the other hand, automated tests need to run relatively quickly and produce "pass/fail" results; they usually focus on potential problems. Here we will focus on characterization tests, because developing them and analyzing their results will be useful in identifying reasonable automated tests. Additionally, many characterization tests can also be applied to Classic MW, allowing us to make informed comparisons between Classic and Next Gen MW.
+We want to characterize the behavior of the Next Gen MW physics engine and to create automated tests
+which allow us to verify the correctness of the engine as we continue developing it. These are two
+somewhat different tasks. Characterization tests of a system produce graphs or charts and test a
+wide range of parameters, so that experts can reason about the system. On the other hand, automated
+tests need to run relatively quickly and produce "pass/fail" results; they usually focus on
+potential problems. Here we will focus on characterization tests, because developing them and
+analyzing their results will be useful in identifying reasonable automated tests. Additionally, many
+characterization tests can also be applied to Classic MW, allowing us to make informed comparisons
+between Classic and Next Gen MW.
 
-In general, to characterize Next Gen MW we need to identify important classes of calculation which it makes, and then create models which can be used to probe or verify those calculations. For example, Classic MW and Next Gen MW approximate the the nonbonded interaction potential between uncharged atoms using the Lennard-Jones approximation, which is parameterized by epsilon, the energy gained as two particles move from infinite separation through the whole attractive region of the potential (i.e., epsilon is the Lennard-Jones potential well depth). But programming mistakes or ill-understood interactions might make the actual well depth unequal to the epsilon parameter provided to the program. So we will want to create models which can be used to establish whether or not epsilon correctly represents the Lennard-Jones potential well depth in Next Gen MW.
+In general, to characterize Next Gen MW we need to identify important classes of calculation which
+it makes, and then create models which can be used to probe or verify those calculations. For
+example, Classic MW and Next Gen MW approximate the the nonbonded interaction potential between
+uncharged atoms using the Lennard-Jones approximation, which is parameterized by epsilon, the energy
+gained as two particles move from infinite separation through the whole attractive region of the
+potential (i.e., epsilon is the Lennard-Jones potential well depth). But programming mistakes or
+ill-understood interactions might make the actual well depth unequal to the epsilon parameter
+provided to the program. So we will want to create models which can be used to establish whether or
+not epsilon correctly represents the Lennard-Jones potential well depth in Next Gen MW.
 
-Well-chosen "minimal case" models would be useful for many verifications. In the case of the Lennard Jones calculation, we could create a two-atom test model with the atoms initially placed so that they are at the minimum of the interaction potential, and we could initialize the atoms with opposite velocities so that they move apart as the simulation progresses. We can then stop the simulation at the model time by which the atoms should have moved out of the effective range of the LJ interaction. Within some numerical limit, the final kinetic energy should equal the initial kinetic energy minus epsilon. If the two quantities are not equal, the minimalist nature of the model will make it easier to use a debugging tool to examine the discrepancy.
+Well-chosen "minimal case" models would be useful for many verifications. In the case of the Lennard
+Jones calculation, we could create a two-atom test model with the atoms initially placed so that
+they are at the minimum of the interaction potential, and we could initialize the atoms with
+opposite velocities so that they move apart as the simulation progresses. We can then stop the
+simulation at the model time by which the atoms should have moved out of the effective range of the
+LJ interaction. Within some numerical limit, the final kinetic energy should equal the initial
+kinetic energy minus epsilon. If the two quantities are not equal, the minimalist nature of the
+model will make it easier to use a debugging tool to examine the discrepancy.
 
-However, it's worth remembering that molecular dynamics is not about simulating such two-body interactions for their own sake. In scientific practice and in pedagogy, molecular dynamics is about using knowledge of micro-scale behaviors to predict aggregate, macro-scale properties of matter (such as its heat capacity) and to understand how those properties arise. Indeed, it is understood that the individual particle trajectories are not scientifically meaningful; not only is any individual particle's movement potentially a statistical outlier, but valid molecular dynamics routines may make approximations and adjustments that perturb individual trajectories while maintaining some appropriate aggregate behavior.
+However, it's worth remembering that molecular dynamics is not about simulating such two-body
+interactions for their own sake. In scientific practice and in pedagogy, molecular dynamics is about
+using knowledge of micro-scale behaviors to predict aggregate, macro-scale properties of matter
+(such as its heat capacity) and to understand how those properties arise. Indeed, it is understood
+that the individual particle trajectories are not scientifically meaningful; not only is any
+individual particle's movement potentially a statistical outlier, but valid molecular dynamics
+routines may make approximations and adjustments that perturb individual trajectories while
+maintaining some appropriate aggregate behavior.
 
-As a modeling engine, Next Gen MW will be judged in part on how well it allows macro-scale properties to emerge from micro-scale dynamics. Minimal-case verifications such as the two-atom example described above can help to make sure that the micro-scale dynamics are being calculated correctly. Other, less minimal, models are needed to make sure that the various micro-scale dynamics, when they are combined with each other and with global perturbations such as thermostats, in fact reproduce the expected macro-scale behaviors. Much like independently unit-tested methods might not play well together, requiring "integration" tests, different behaviors with apparently-correct dynamics might not combine to create the correct emergent behavior.
+As a modeling engine, Next Gen MW will be judged in part on how well it allows macro-scale
+properties to emerge from micro-scale dynamics. Minimal-case verifications such as the two-atom
+example described above can help to make sure that the micro-scale dynamics are being calculated
+correctly. Other, less minimal, models are needed to make sure that the various micro-scale
+dynamics, when they are combined with each other and with global perturbations such as thermostats,
+in fact reproduce the expected macro-scale behaviors. Much like independently unit-tested methods
+might not play well together, requiring "integration" tests, different behaviors with apparently-
+correct dynamics might not combine to create the correct emergent behavior.
 
-To think about the kind of erroneous behaviors that might not be caught by minimal, two-atom models, consider the case of the Lennard Jones epsilon parameter. Certainly we can write a unit test for the Lennard Jones calculator method to make sure it returns the correct values. But even the two-atom, minimal-case model described above does more than this; it also makes sure that the "correct" calculated potential is correctly consumed by the algorithm which converts potential to kinetic energy. But many other possible problems with the LJ potential calculation are not tested by the simple 2-atom model. Perhaps in "real" use there will prove to be integration errors caused by atoms' occasional incursion into the stiff repulsive core of the LJ potential. Perhaps there is a bad synergistic interaction between the LJ potential, the integration algorithm, and the thermostat algorithm. Or perhaps there's an "unknown unknown" problem with the LJ potential calculation. To find out whether any of these possible problems are real, we need to create models which have many atoms and run for a long period of time.
+To think about the kind of erroneous behaviors that might not be caught by minimal, two-atom models,
+consider the case of the Lennard Jones epsilon parameter. Certainly we can write a unit test for the
+Lennard Jones calculator method to make sure it returns the correct values. But even the two-atom,
+minimal-case model described above does more than this; it also makes sure that the "correct"
+calculated potential is correctly consumed by the algorithm which converts potential to kinetic
+energy. But many other possible problems with the LJ potential calculation are not tested by the
+simple 2-atom model. Perhaps in "real" use there will prove to be integration errors caused by
+atoms' occasional incursion into the stiff repulsive core of the LJ potential. Perhaps there is a
+bad synergistic interaction between the LJ potential, the integration algorithm, and the thermostat
+algorithm. Or perhaps there's an "unknown unknown" problem with the LJ potential calculation. To
+find out whether any of these possible problems are real, we need to create models which have many
+atoms and run for a long period of time.
 
-But how do we summarize the results of a long-running model with many atoms, and how do we arrange the model so that the results are related in some important way to features of the physics engine? A productive way to think about this question is to consider the simulation a special kind of experiment. We have the ability to set up a simulation that starts in some wildly improbable, out-of-equilibrium state. But when we let the physics engine run, measurable aggregate properties such as temperature will approach some equilibrium value. With some thought, we can arrange the initial state and the final measurement so that they depend on the particular behaviors of the physics engine that we want to test.
+But how do we summarize the results of a long-running model with many atoms, and how do we arrange
+the model so that the results are related in some important way to features of the physics engine? A
+productive way to think about this question is to consider the simulation a special kind of
+experiment. We have the ability to set up a simulation that starts in some wildly improbable, out-
+of-equilibrium state. But when we let the physics engine run, measurable aggregate properties such
+as temperature will approach some equilibrium value. With some thought, we can arrange the initial
+state and the final measurement so that they depend on the particular behaviors of the physics
+engine that we want to test.
 
-Consider once more the Lennard Jones example. The epsilon parameter should be equal to the difference in potential energy when two (uncharged, non-bonded) atoms are moved from far away, through the attractive region of their pairwise interaction, to the point where they just begin to repel each other. This means that after we choose a set of initial atom positions, the total potential energy of the system (which we can easily calculate as the sum of the pairwise potential energies) depends on epsilon. However, it is not directly observable. On the other hand, the initial kinetic energy, which we can choose at will, does not depend on epsilon. Although any initial condition we choose is likely to be out of equilibrium, as the system evolves towards equilibrium, the potential and kinetic energy will mix and their proportion will approach a unique value. This allows us to make an implicit measurement of the unmeasurable "true" initial potential energy.
+Consider once more the Lennard Jones example. The epsilon parameter should be equal to the
+difference in potential energy when two (uncharged, non-bonded) atoms are moved from far away,
+through the attractive region of their pairwise interaction, to the point where they just begin to
+repel each other. This means that after we choose a set of initial atom positions, the total
+potential energy of the system (which we can easily calculate as the sum of the pairwise potential
+energies) depends on epsilon. However, it is not directly observable. On the other hand, the initial
+kinetic energy, which we can choose at will, does not depend on epsilon. Although any initial
+condition we choose is likely to be out of equilibrium, as the system evolves towards equilibrium,
+the potential and kinetic energy will mix and their proportion will approach a unique value. This
+allows us to make an implicit measurement of the unmeasurable "true" initial potential energy.
 
-In this scenario, the expected equilibrium proportion of potential and kinetic energy depends on several parameters: the modeled area, the number of atoms, their radii, the initial kinetic energy, the set of initial pairwise separations, and finally epsilon itself. The equilibrium proportion is also not easily calculable from first principles. We can however use a Classic MW model to predict this value; in order to meaningfully compare the classic MW model and a Next Gen MW model, however, we need to start by choosing a single point in this parameter space.
+In this scenario, the expected equilibrium proportion of potential and kinetic energy depends on
+several parameters: the modeled area, the number of atoms, their radii, the initial kinetic energy,
+the set of initial pairwise separations, and finally epsilon itself. The equilibrium proportion is
+also not easily calculable from first principles. We can however use a Classic MW model to predict
+this value; in order to meaningfully compare the classic MW model and a Next Gen MW model, however,
+we need to start by choosing a single point in this parameter space.
 
-Having chosen our point in the paramter space, we can examine the treatment of epsilon by choosing a set of initial atom positions and velocities which correspond the same total energy, but which represent different initial ratios of potential to total energy. By running the model to equilibrium in Classic MW, we can graph the equilibrium kinetic energy against the initial kinetic energy to estimate the equilibrium kinetic energy and show that it does not depend on the initial fraction of kinetic energy. We can then run the same experiment in Next Gen MW. If it turns out that Next Gen MW treats epsilon incorrectly, then the calculated initial potential energies will not be the "true" initial potential energies, and this will skew the resulting equilibrium kinetic energies. We expect, however, to confirm that the Next Gen MW equilibrium kinetic energy reaches the same value as for Classic MW, and  does not depend on the initial energy apportionment.
+Having chosen our point in the paramter space, we can examine the treatment of epsilon by choosing a
+set of initial atom positions and velocities which correspond the same total energy, but which
+represent different initial ratios of potential to total energy. By running the model to equilibrium
+in Classic MW, we can graph the equilibrium kinetic energy against the initial kinetic energy to
+estimate the equilibrium kinetic energy and show that it does not depend on the initial fraction of
+kinetic energy. We can then run the same experiment in Next Gen MW. If it turns out that Next Gen MW
+treats epsilon incorrectly, then the calculated initial potential energies will not be the "true"
+initial potential energies, and this will skew the resulting equilibrium kinetic energies. We
+expect, however, to confirm that the Next Gen MW equilibrium kinetic energy reaches the same value
+as for Classic MW, and  does not depend on the initial energy apportionment.
 
-Finally, for robustness, we can repeat the Classic vs Next Gen analysis at different fixed points in the parameter space. Notably, we can repeat the analysis for different values of epsilon.
+Finally, for robustness, we can repeat the Classic vs Next Gen analysis at different fixed points in
+the parameter space. Notably, we can repeat the analysis for different values of epsilon.
 
 ---
 
-We can generalize the scenario described above into a generic strategy for characterizing the behavior of Next Gen MW and comparing it to the behavior of Classic MW. (Although the strategy is presented below as if it could be applied in cut-and-dried fashion to each calculation of interest, in fact many characterization strategies may simply be inspired by the steps listed below, rather than strictly following them.)
+We can generalize the scenario described above into a generic strategy for characterizing the
+behavior of Next Gen MW and comparing it to the behavior of Classic MW. (Although the strategy is
+presented below as if it could be applied in cut-and-dried fashion to each calculation of interest,
+in fact many characterization strategies may simply be inspired by the steps listed below, rather
+than strictly following them.)
 
-1. Identify the essential classes of calculation and identify paths by which the system might fail to consume those calculations correctly.
+1. Identify the essential classes of calculation and identify paths by which the system might fail
+to consume those calculations correctly.
 
-For example, above we considered the correct calculation of the Lennard Jones potential energy for a given epsilon value. We implicitly identified the possibility that a "correct" potential energy value is is not correctly converted to kinetic energy as integration proceeds, independently perhaps of the engine's ability to convert other potentials (such as Coulomb potentials) to kinetic energy.
+For example, above we considered the correct calculation of the Lennard Jones potential energy for a
+given epsilon value. We implicitly identified the possibility that a "correct" potential energy
+value is is not correctly converted to kinetic energy as integration proceeds, independently perhaps
+of the engine's ability to convert other potentials (such as Coulomb potentials) to kinetic energy.
 
 
 2. If possible, create a minimal model that depends on the correctness of the calculation.
 
-This corresponds to the two-atom model described above, which allows one to directly assess the conversion of potential to kinetic energy. Incorrect treatment of epsilon would result in the atoms having a final speed that does not correspond to the expected final kinetic energy. The test model is amenable to debugging. However, the model exercises an artificially small number of interactions compared to normal usage, and the results may be sensitive to small variations in inessential features of the simulation such as the exact amount of model time that is allowed to pass.
+This corresponds to the two-atom model described above, which allows one to directly assess the
+conversion of potential to kinetic energy. Incorrect treatment of epsilon would result in the atoms
+having a final speed that does not correspond to the expected final kinetic energy. The test model
+is amenable to debugging. However, the model exercises an artificially small number of interactions
+compared to normal usage, and the results may be sensitive to small variations in inessential
+features of the simulation such as the exact amount of model time that is allowed to pass.
 
 
-3. Create a generic, many-atoms model which allows you to vary initial conditions and measure a quantity whose equilibrium value depends on the initial conditions via the calculation under test.
+3. Create a generic, many-atoms model which allows you to vary initial conditions and measure a
+quantity whose equilibrium value depends on the initial conditions via the calculation under test.
 
-This corresponds to the many-atom model described above, where different initial proportions of potential and kinetic energy are expected to equilibrate to the same final proportion of potential and kinetic energy. Incorrect treatment of the epsilon parameter could lead to the "true" initial potential energy being different than the assumed value which is calculated from the initial atom positions. This would show up as a nonzero slope in the graph of equilibrium kinetic energy versus initial kinetic energy. Note that this experiment exercises a more realistic number of interactions than the minimal model, and is robust to inessential changes in atomic trajectories and to the exact amount of model time that is allowed to pass.
+This corresponds to the many-atom model described above, where different initial proportions of
+potential and kinetic energy are expected to equilibrate to the same final proportion of potential
+and kinetic energy. Incorrect treatment of the epsilon parameter could lead to the "true" initial
+potential energy being different than the assumed value which is calculated from the initial atom
+positions. This would show up as a nonzero slope in the graph of equilibrium kinetic energy versus
+initial kinetic energy. Note that this experiment exercises a more realistic number of interactions
+than the minimal model, and is robust to inessential changes in atomic trajectories and to the exact
+amount of model time that is allowed to pass.
 
 ---
 
-Here are some examples of important calculations, with brief descriptions of possible strategies for characterizing and verifying them:
+Here are some examples of important calculations, with brief descriptions of possible strategies for
+characterizing and verifying them:
 
 1. Basic conservation of energy (kinetic-potential interconversion)
 
-The most basic calculation to test is that total energy is conserved as a system evolves. Integration errors or unit conversion errors can result in interconversion of potential to kinetic energy at a non-unit ratio.
+The most basic calculation to test is that total energy is conserved as a system evolves.
+Integration errors or unit conversion errors can result in interconversion of potential to kinetic
+energy at a non-unit ratio.
 
  micro model:
 
@@ -120,4 +223,3 @@ The most basic calculation to test is that total energy is conserved as a system
     Graph final kinetic energy versus number of charged particles
 
   Key here is that you can compare to Classic MW. Make sure simulation runs long enough / mixing is high enough / total energy is low enough to guarantee that charged particles condense.
-

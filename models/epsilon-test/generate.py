@@ -103,10 +103,12 @@ def generate_hot_atoms(ke):
 
   for i in range(0, nx):
     for j in range(0, ny):
+      angle = np.random.uniform() * math.pi
+
       X.append(rx * (i+1))
       Y.append(height/2 + ry * (j+1))
-      VX.append(v)
-      VY.append(0)
+      VX.append(v * math.sin(angle))
+      VY.append(v * math.cos(angle))
 
   return (X, Y, VX, VY)
 

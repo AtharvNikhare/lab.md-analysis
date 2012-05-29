@@ -3,8 +3,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-def get_ke(line): 
+def get_nextgen_ke(line): 
   return float(line.split()[2])
+
+def get_classic_ke(line):
+  return 98.0 * float(line.split()[2])
 
 # Ahh, thrown-together one-liners. Reads "initial ke" column from index.txt.
 initial_ke = map(lambda (x): float(x.split()[1]), open('index.txt').readlines()[4:])
@@ -27,9 +30,9 @@ for i in range(1, 6):
   nextgen_fname = "nextgen/model{}.data.txt".format(i)
   nextgen_control_fname = "nextgen/model{}-control.data.txt".format(i)
 
-  classic_data.append( map(get_ke, open(classic_fname, 'r').readlines()) )
-  nextgen_data.append( map(get_ke, open(nextgen_fname, 'r').readlines()) )
-  nextgen_control_data.append( map(get_ke, open(nextgen_control_fname, 'r').readlines()) )
+  classic_data.append( map(get_classic_ke, open(classic_fname, 'r').readlines()) )
+  nextgen_data.append( map(get_nextgen_ke, open(nextgen_fname, 'r').readlines()) )
+  nextgen_control_data.append( map(get_nextgen_ke, open(nextgen_control_fname, 'r').readlines()) )
 
   classic_ke.append( np.mean(classic_data[i-1]) )
   classic_sd.append( np.std(classic_data[i-1]) )

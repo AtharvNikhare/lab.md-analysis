@@ -61,3 +61,21 @@ plt.xlabel(r'Initial KE of model (eV)')
 plt.ylabel(r'Steady-state KE of model (eV)')
 plt.legend(loc='lower center')
 plt.savefig('lj-epsilon-test', dpi=300)
+
+plt.clf()
+
+
+
+def plot_one_series(data, name, row):
+  for i in range(1, 6):
+    plt.subplot(3, 5, i + (row - 1) * 5);
+    plt.ylim(0,7)
+    plt.plot(data[i-1])
+
+plt.title("Time series of KE values")
+
+plot_one_series(classic_data, "Classic MW", 1)
+plot_one_series(nextgen_data, "Next Gen MW", 2)
+plot_one_series(nextgen_control_data, r'Next Gen MW, incorrect $\epsilon$', 3)
+
+plt.savefig('lj-raw-data', dpi=300)

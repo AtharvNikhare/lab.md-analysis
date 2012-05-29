@@ -50,6 +50,8 @@ plt.errorbar(initial_ke, classic_ke, yerr=classic_sd, label='Classic MW')
 plt.errorbar(initial_ke, nextgen_ke, yerr=nextgen_sd, label='Next Gen MW')
 plt.errorbar(initial_ke, nextgen_control_ke, yerr=nextgen_control_sd, label=r'Next Gen MW, incorrect $\epsilon$')
 
+
+plt.title("KE at equilibrium vs. initial KE (total energy held constant)\nFor Next Gen MW as of 5-29-2012");
 plt.ylim(0, 7)
 plt.xlabel(r'Initial KE of model (eV)')
 plt.ylabel(r'Steady-state KE of model (eV)')

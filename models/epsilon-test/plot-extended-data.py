@@ -12,7 +12,7 @@ def get_te(line):
 initial_ke = map(lambda (x): float(x.split()[1]), open('index.txt').readlines()[4:])
 
 for i in (1, 5):
-  plt.subplot(2, 1, 1 + i/5, title="Next Gen MW Kinetic Energy, initial KE = {:.4f} eV".format(initial_ke[i-1]))
+  plt.subplot(2, 1, 1 + i/5, title="Next Gen MW Kinetic Energy, initial KE = {:.4f} eV".format(initial_ke[i]))
   fname = 'nextgen/model{}-extended.data.txt'.format(i)
   lines =  open(fname, 'r').readlines()
   ke = map(get_ke, lines)

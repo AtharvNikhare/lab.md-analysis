@@ -22,7 +22,7 @@ for i in (1,6):
   plot_num += 1
 
   for data_type in ('classic', 'nextgen'):
-    plt.title("initial KE = {:.4f} eV".format(initial_ke[i-1]))
+    plt.title("initial KE = {:.4f} eV".format(initial_ke[i]))
     fname = '{}/model{}-initial.data.txt'.format(data_type, i)
     lines =  open(fname, 'r').readlines()
     if data_type == 'classic':

@@ -168,7 +168,21 @@ f.write("number of particles = {}\n".format(nx*ny*2))
 f.write("total energy = {:.4f}\n\n".format(te))
 f.write("model #\tinitial KE\n")
 
-model_num = 1
+model_num = 0
+
+# hackily generate model 0 with 0% KE
+(X, Y, VX, VY) = generate_cold_atoms(te/2)
+X = map(lambda x: x + width / 2, X)
+Y = map(lambda y: y + height / 4, Y)
+bottomY = map(lambda y: y + height/2, Y)
+generate_mw_files(model_num, X + X, Y + bottomY, VX + VX, VY + VY)
+convert_mml_file(model_num)
+f.write("{}\t{:.4f}\n".format(model_num, 0))
+
+model_num += 1
+
+# generate models 1-5...
+
 for ke_to_pe_ratio in np.logspace(-2, 2, 5, base=3):
   ke_fraction = ke_to_pe_ratio / (ke_to_pe_ratio + 1)
 

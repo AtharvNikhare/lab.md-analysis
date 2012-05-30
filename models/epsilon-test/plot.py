@@ -74,7 +74,7 @@ plt.clf()
 def plot_one_series(data, name, row):
   for i in range(0, 7):
     plt.subplot(3, 7, i + (row - 1) * 7);
-    plt.ylim(3,8)
+    plt.ylim(0,8)
     plt.plot(data[i-1])
 
 plt.title("Time series of KE values")

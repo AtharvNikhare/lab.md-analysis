@@ -179,3 +179,11 @@ for ke_to_pe_ratio in np.logspace(-2, 2, 5, base=3):
   convert_mml_file(model_num)
   f.write("{}\t{:.4f}\n".format(model_num, ke_fraction*te))
   model_num += 1
+
+# also generate a model with 100% KE. Handle this as a special case
+(X, Y, VX, VY) = generate_hot_atoms(te)
+topY = map(lambda y: y - height/2, Y)
+generate_mw_files(model_num, X + X, Y + topY, VX + VX, VY + VY)
+convert_mml_file(model_num)
+f.write("{}\t{:.4f}\n".format(model_num, te))
+model_num += 1

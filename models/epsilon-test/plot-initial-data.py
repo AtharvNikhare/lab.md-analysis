@@ -14,18 +14,25 @@ def get_te(line):
 
 initial_ke = map(lambda (x): float(x.split()[1]), open('index.txt').readlines()[4:])
 
-for data_type in ('classic', 'nextgen'):
-  plt.title("Initial MW Kinetic Energy, initial KE = {:.4f} eV".format(initial_ke[0]))
-  fname = '{}/model1-initial.data.txt'.format(data_type)
-  lines =  open(fname, 'r').readlines()
-  if data_type == 'classic':
-    ke = map(get_classic_ke, lines)
-  else:
-    ke = map(get_nextgen_ke, lines)
-  plt.ylim(2, 12)
-  plt.ylabel("Kinetic Energy (eV)")
-  plt.xlabel("time step")
-  plt.plot(ke, label = data_type)
-  plt.legend()
+plot_num = 1
+
+for i in (1,6):
+  
+  plt.subplot(2,1,plot_num)
+  plot_num += 1
+
+  for data_type in ('classic', 'nextgen'):
+    plt.title("initial KE = {:.4f} eV".format(initial_ke[i-1]))
+    fname = '{}/model{}-initial.data.txt'.format(data_type, i)
+    lines =  open(fname, 'r').readlines()
+    if data_type == 'classic':
+      ke = map(get_classic_ke, lines)
+    else:
+      ke = map(get_nextgen_ke, lines)
+    plt.ylim(2, 12)
+    plt.ylabel("Kinetic Energy (eV)")
+    plt.xlabel("time step")
+    plt.plot(ke, label = data_type)
+    plt.legend()
   
 plt.savefig('lj-initial-data', dpi=300)

@@ -16,10 +16,9 @@ initial_ke = map(lambda (x): float(x.split()[1]), open('index.txt').readlines()[
 
 plot_num = 1
 
-for i in (1,6):
+for i in (0,6):
   
   plt.subplot(2,1,plot_num)
-  plot_num += 1
 
   for data_type in ('classic', 'nextgen'):
     plt.title("initial KE = {:.4f} eV".format(initial_ke[i]))
@@ -29,10 +28,14 @@ for i in (1,6):
       ke = map(get_classic_ke, lines)
     else:
       ke = map(get_nextgen_ke, lines)
-    plt.ylim(2, 12)
+    plt.ylim(0, 20)
     plt.ylabel("Kinetic Energy (eV)")
-    plt.xlabel("time step")
+    plt.xlim(0, 200)
+    if plot_num == 2: 
+      plt.xlabel("time step")
     plt.plot(ke, label = data_type)
     plt.legend()
+
+  plot_num += 1
   
 plt.savefig('lj-initial-data', dpi=300)

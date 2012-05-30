@@ -25,7 +25,7 @@ nextgen_control_sd = []
 
 print "Initial KE (eV)\tClassic KE (eV)\tsd\tNext Gen KE (eV)\tsd\tControl KE (eV)\tsd\n" 
 
-for i in range(1, 6):
+for i in range(1, 7):
   classic_fname = "classic/model{}.data.txt".format(i)
   nextgen_fname = "nextgen/model{}.data.txt".format(i)
   nextgen_control_fname = "nextgen/model{}-control.data.txt".format(i)
@@ -70,8 +70,8 @@ plt.clf()
 
 
 def plot_one_series(data, name, row):
-  for i in range(1, 6):
-    plt.subplot(3, 5, i + (row - 1) * 5);
+  for i in range(1, 7):
+    plt.subplot(3, 6, i + (row - 1) * 6);
     plt.ylim(0,7)
     plt.plot(data[i-1])
 

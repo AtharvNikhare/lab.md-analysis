@@ -1,0 +1,9 @@
+number of particles = 100
+total energy = 2.5852
+
+model #	initial KE
+1	0.0000
+2	0.6463
+3	1.2926
+4	1.9389
+5	2.5852

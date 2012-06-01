@@ -38,11 +38,11 @@ def lj(rsq, epsilon = epsilon, sigma = sigma):
   return alpha * rsq ** -6 - beta * rsq ** -3
 
 # Organize particles into grid of nx x ny particles
-nx = 10
-ny = 10
-N = nx * ny
+nx = 7
+ny = 7
+N = 2 * nx * ny
 
-# x, y grid position of atom i (0 <= i < N)
+# x, y grid position of atom i (0 <= i < nx*ny)
 def grid_pos(i):   
   return (i % nx, i / nx)
 
@@ -51,8 +51,9 @@ def pe(l):
   # calculate pe from LJ formula
   pe = 0
 
-  for i in range(0, N-1):
-    for j in range(i+1, N):
+  n = nx * ny
+  for i in range(0, n - 1):
+    for j in range(i+1, n):
       (xi, yi) = grid_pos(i)
       (xj, yj) = grid_pos(j)
       rsq = l * l * (abs(xi-xj) ** 2 + abs(yi-yj) ** 2)
@@ -70,17 +71,22 @@ def separation(initial_pe):
 
 
 def positions(r):
+  """ 
+  returns (X,Y) vectors of x, y positions from
+  a grid of nx x ny position separated by distance r,
+  centered at (0, 0)
+  """
 
   X = []
   Y = []
 
-  leftx = (width  - r * (nx - 1)) / 2
-  topy  = (height - r * (ny - 1)) / 2
+  leftx = -r*(nx - 1) / 2
+  topy  = -r*(ny - 1) / 2
 
   for i in range(0, nx):
     for j in range(0, ny):
-      X.append(leftx + r * (i+1))
-      Y.append(topy  + r * (j+1))
+      X.append(leftx + r * i)
+      Y.append(topy  + r * j)
 
   return (X, Y)
 
@@ -90,7 +96,7 @@ def velocities(initial_ke_in_ev):
   VX = []
   VY = []
 
-  ke_per_atom_in_joules = initial_ke_in_ev * JOULES_PER_EV / N
+  ke_per_atom_in_joules = initial_ke_in_ev * JOULES_PER_EV / (nx * ny)
 
   mass_in_kg = mass * KILOGRAMS_PER_DALTON
   v_per_atom_in_mks = math.sqrt(2 * ke_per_atom_in_joules / mass_in_kg)
@@ -174,17 +180,35 @@ if __name__ == "__main__":
 
   print "#\tsep (nm)\tPE (eV)\tKE (eV)\tTE (eV)"
 
-  for ke in np.linspace(0, te, 5):
+  # pe of cold atoms when ke = 0
+  pe_max = pe( separation(te) )
 
-    r = separation(te - ke)
-    calculated_pe = pe(r)
+  # pe of cold atoms when separation is rmin
+  pe_min = pe( 2 ** (1./6) * sigma )
 
-    print "{}\t{:.6f}\t{:.4f}\t{:.4f}\t{:.4f}".format(model_num, r, calculated_pe, ke, ke + calculated_pe)
+  for target_pe in np.linspace(pe_max, pe_min, 5):
 
-    (X, Y) = positions(r)
-    (VX, VY) = velocities(ke)
+    cold_r = separation( target_pe )
+    calculated_pe = pe(cold_r)
 
-    generate_mw_files(model_num, X, Y, VX, VY)
+    (coldX, coldY) = positions(cold_r)
+    coldX = map( lambda x: x + width/2, coldX )
+    coldY = map( lambda y: y + height/4, coldY )
+    coldVX = [0.] * nx * ny
+    coldVY = [0.] * nx * ny
+
+    hot_r = min(width / (nx+1), (height/2) / (ny+1))
+    calculated_pe += pe(hot_r)
+    ke = te - calculated_pe
+    (hotX, hotY) = positions(hot_r)
+    hotX = map( lambda x: x + width/2, hotX )
+    hotY = map( lambda y: y + 3 * height/4, hotY )
+
+    (hotVX, hotVY) = velocities(ke)
+
+    print "{}\t{:.6f}\t{:.4f}\t{:.4f}\t{:.4f}".format(model_num, cold_r, calculated_pe, ke, te)
+
+    generate_mw_files(model_num, coldX+hotX, coldY+hotY, coldVX+hotVX, coldVY+hotVY)
     convert_mml_file(model_num)
     f.write("{}\t{:.4f}\n".format(model_num, ke))
     model_num += 1

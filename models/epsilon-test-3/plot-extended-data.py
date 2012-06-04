@@ -14,32 +14,28 @@ def get_ke(line):
 def get_te(line):
   return float(line.split()[2])
 
-initial_ke = map(lambda (x): float(x.split()[1]), open('index.txt').readlines()[4:])
+index = open('index.txt').readlines()[1:]
 
-for dataset in ('unmodified', 'modified'):
-  plt.clf()
-  suffix = '' if dataset == 'unmodified' else '-control'
+for index_line in index:
+  if len(index_line) > 0:
+    (model_num, epsilon, initial_ke, final_ke) = index_line .split('\t')
 
-  for i in range(1,6):
-    # plt.subplot(2, 1, 1 + i/5, title="Next Gen MW Kinetic Energy, initial KE = {:.4f} eV".format(initial_ke[i-1]))
-    fname = 'nextgen/model{}{}.data.txt'.format(i, suffix)
+    fname = 'nextgen/model{}.data.txt'.format(model_num)
     lines =  open(fname, 'r').readlines()
 
     time = map(get_time, lines)
-    start = bisect.bisect_left(time, 100000)
-    #start = 0
+    start = bisect.bisect_left(time, 20000)
+    end = bisect.bisect_left(time, 40000)
 
-    time = time[start:] 
-    ke = map(get_ke, lines[start:])
-    te = map(get_te, lines[start:])
+    time = time[start:end+1]
+    ke = map(get_ke, lines[start:end+1])
     
     plt.xlabel("time (fs)")
     plt.ylabel("Energy (eV)")
-    plt.ylim(2, 8)
+    plt.ylim(-2, 10)
 
     plt.plot(time, ke, label = "Kinetic Energy")
-    plt.plot(time, te, label = "Total Energy")
 
-    plt.title("Time series of {} Next Gen MW kinetic and total energy".format(dataset))
-    
-  plt.savefig('lj-extended-data{}'.format(suffix), dpi=300)
+    plt.title("Time series of Next Gen MW kinetic energy")
+
+plt.savefig('lj-extended-data.png', dpi=300)

@@ -2,7 +2,7 @@
 <java version="1.6.0_31" class="java.beans.XMLDecoder"> 
  <object id="Element0" class="org.concord.mw2d.models.Element"> 
   <void property="epsilon"> 
-   <double>0.01</double> 
+   <double>0.1</double> 
   </void> 
   <void property="mass"> 
    <double>0.332916666667</double> 

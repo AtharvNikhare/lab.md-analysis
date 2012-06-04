@@ -4,8 +4,6 @@ import math
 import numpy as np
 import scipy
 
-from scipy.optimize import fsolve
-
 import pystache
 import os
 import errno
@@ -25,14 +23,14 @@ mass = 39.95    # g/mol (amu, Dalton)
 height = 5.0      # nm
 width  = 5.0      # nm
 
-# initial temperature 
-T = 300.0        # K
-
 # Boltzmann constant
 kB = 8.6173423e-5   # eV/K
 
 # Lennard-Jones potential for squared pairwise separation rsq
 def lj(rsq, epsilon = epsilon, sigma = sigma):
+  """
+  Lennard-Jones potential for squared pairwise separation = rsq
+  """
   alpha = 4 * epsilon * sigma ** 12
   beta  = 4 * epsilon * sigma ** 6
   return alpha * rsq ** -6 - beta * rsq ** -3
@@ -46,6 +44,10 @@ N = 2 * nx * ny
 SQRT_3_OVER_2 = math.sqrt(3)/2
 
 def grid_pos(i):
+  """
+  Location on the unit-length hexagonal lattice of the ith particle
+  """
+
   x = i % nx
   y = i / nx
 
@@ -53,11 +55,13 @@ def grid_pos(i):
     x += 0.5
   y *= SQRT_3_OVER_2
 
-  print (x, y)
   return (x, y)
 
-# total energy if nx * ny particles are arranged in a rectangular grid with cell length r
-def pe(l):
+def pe(r):
+  """
+  potential energy of nx * ny particles arranged in a hexagonal lattice
+  with interparticle distance r
+  """
   # calculate pe from LJ formula
   pe = 0
 
@@ -66,25 +70,16 @@ def pe(l):
     for j in range(i+1, n):
       (xi, yi) = grid_pos(i)
       (xj, yj) = grid_pos(j)
-      rsq = l * l * (abs(xi-xj) ** 2 + abs(yi-yj) ** 2)
+      rsq = r * r * (abs(xi-xj) ** 2 + abs(yi-yj) ** 2)
       pe += lj(rsq)
 
   return pe
 
 
-def separation(initial_pe):
-  f = lambda r: pe(r) - initial_pe
-  [r] = fsolve(f, sigma)
-  return r
-
-  # print "\nTarget initial PE of cold atoms = {:.4f}. At r = {:.6f} nm, PE = {:.4f} eV\n".format(initial_pe, r, pe(r))
-
-
 def positions(r):
   """ 
-  returns (X,Y) vectors of x, y positions from
-  a grid of nx x ny position separated by distance r,
-  centered at (0, 0)
+  returns (X,Y) vectors for nx*ny particles arranged in a hexagonal lattice
+  with separation r
   """
 
   X = []
@@ -101,23 +96,23 @@ def positions(r):
   return (X, Y)
 
 
-def velocities(initial_ke_in_ev):
-
+def velocities(initial_ke_in_ev, n, angle):
+  """
+  VX, VY angles for n particles which should have total KE, in Joules,
+  'initial_ke_in_ev'. All particles will translate in direction 'angle'
+  """
   VX = []
   VY = []
 
-  ke_per_atom_in_joules = initial_ke_in_ev * JOULES_PER_EV / (nx * ny)
+  ke_per_atom_in_joules = initial_ke_in_ev * JOULES_PER_EV / n
 
   mass_in_kg = mass * KILOGRAMS_PER_DALTON
   v_per_atom_in_mks = math.sqrt(2 * ke_per_atom_in_joules / mass_in_kg)
   v = v_per_atom_in_mks * MW_VELOCITY_UNITS_PER_METER_PER_SECOND
 
-  for i in range(0, nx):
-    for j in range(0, ny):
-      angle = np.random.uniform() * math.pi
-
-      VX.append(v * math.sin(angle))
-      VY.append(v * math.cos(angle))
+  for i in range(0, n):
+    VX.append(v * math.cos(angle))
+    VY.append(v * math.sin(angle))
 
   return (VX, VY)
 
@@ -166,47 +161,41 @@ def convert_mml_file(num):
     './convert.coffee', 
     'classic/model{}$0.mml'.format(num), 
     'nextgen/model{}.json'.format(num),
-    'absolute-0-test{}'.format(num)
+    'epsilon-test-3-model{}'.format(num)
   ])
 
 if __name__ == "__main__":
 
   mkdir_p('classic')
   mkdir_p('nextgen')
-
-  # Choose an initial energy so the final temperature is some reasonable number.
-  # Note the equilibrium temperature will settle above T because the equilibrium
-  # value of the potential energy will be less that zero.
-  te = N * kB * T     # eV
-
-  print "target energy = {:.4f} eV\n".format(te)
-
-  f = open('index.txt', 'w')
-  f.write("number of particles = {}\n".format(N))
-  f.write("total energy = {:.4f}\n\n".format(te))
-  f.write("model #\tinitial KE\n")
+  print "#\tsep (nm)\tPE (eV)\tKE (eV)\tTE (eV)"   
 
   model_num = 1
+  for T in np.linspace(0, 1000, 3):
 
-  print "#\tsep (nm)\tPE (eV)\tKE (eV)\tTE (eV)"
+    final_ke = N * kB * T     # eV
 
-  rmin = 2 ** (1./6) * sigma
-  calculated_pe = pe(rmin)
+    rmin = 2 ** (1./6) * sigma
+    calculated_pe = 2*pe(rmin)
 
-  (X, Y) = positions(rmin)
-  topX = map( lambda x: x + width/2, X )
-  topY = map( lambda y: y + height/4, Y )
-  topVX = [0.] * nx * ny
-  topVY = [0.] * nx * ny
+    ke = final_ke - calculated_pe if T > 0 else 0
 
-  bottomX = map( lambda x: x + width/2, X )
-  bottomY = map( lambda y: y + 3 * height/4, Y )
-  bottomVX = [0.] * nx * ny
-  bottomVY = [0.] * nx * ny
+    (X, Y) = positions(rmin)
 
-  print "{}\t{:.6f}\t{:.4f}\t{:.4f}\t{:.4f}".format(model_num, rmin, calculated_pe, 0, 0 + calculated_pe)
+    # some atoms headed down
+    topX = map( lambda x: x + width/2, X )
+    topY = map( lambda y: y + height/4, Y )
+    (topVX, topVY) = velocities(ke/2, N/2, math.pi/2)
 
-  generate_mw_files(model_num, topX+bottomX, topY+bottomY, topVX+bottomVX, topVY+bottomVY)
-  convert_mml_file(model_num)
-  f.write("{}\t{:.4f}\n".format(model_num, 0))
-  model_num += 1
+    # and some atoms headed up
+    bottomX = map( lambda x: x + width/2, X )
+    bottomY = map( lambda y: y + 3 * height/4, Y )
+    (bottomVX, bottomVY) = velocities(ke/2, N/2, -math.pi/2)
+
+    print "{}\t{:.6f}\t{:.4f}\t{:.4f}\t{:.4f}".format(
+      model_num, rmin, calculated_pe, ke, ke + calculated_pe
+    )
+
+    generate_mw_files(model_num, topX+bottomX, topY+bottomY, topVX+bottomVX, topVY+bottomVY)
+    convert_mml_file(model_num)
+    model_num += 1

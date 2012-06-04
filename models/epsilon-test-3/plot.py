@@ -29,8 +29,10 @@ nextgen_ke = np.array([])
 nextgen_sd = np.array([])
 
 epsilons = np.array([])
+initial_pes = np.array([])
 initial_kes = np.array([])
 final_kes = np.array([])
+
 
 index = open('index.txt').readlines()[1:]
 
@@ -41,9 +43,10 @@ for index_line in index:
     i += 1
 
     model_num = int(index_line.split('\t')[0])
-    (epsilon, initial_ke, final_ke) = map(float, index_line.split('\t')[1:])
+    (epsilon, initial_pe, initial_ke, final_ke) = map(float, index_line.split('\t')[1:])
 
     epsilons = np.append(epsilons, epsilon)
+    initial_pes = np.append(initial_pes, initial_pe)
     initial_kes = np.append(initial_kes, initial_ke)
     final_kes = np.append(final_kes, final_ke)
 
@@ -80,17 +83,32 @@ for index_line in index:
 # actually plot stuff
 
 plt.xlim(0, 0.13)
-plt.ylim(0, 15)
+plt.ylim(0, 0.13)
 
 # the experimental condition: all indices for which final KE > 0
 exp = final_kes > 0
 
-plt.errorbar(epsilons[exp], classic_ke[exp], yerr=classic_sd[exp], label='Classic MW')
-plt.errorbar(epsilons[exp], nextgen_ke[exp], yerr=nextgen_sd[exp], label='Next Gen MW')
-plt.errorbar(epsilons[exp], final_kes[exp], label=r'Approx expected value')
+def est_epsilon(measured_final_ke, final_ke_sd, initial_ke, epsilons, initial_pes):
+  """
+  Estimate epsilon from final KE, initial KE, and initial total energy for "correct" epsilon 
+  Vectorized form. Returns (epsilons, standard deviations)
+  """
+  epsilon_over_te = epsilons / -initial_pes
+  return ( (initial_ke - measured_final_ke) * epsilon_over_te, final_ke_sd * epsilon_over_te )
 
-plt.title("Comparison of Classic vs. Next Gen MW KE after melting solid")
-plt.xlabel(r'Epsilon (eV)')
-plt.ylabel(r'Steady-state KE of model (eV)')
+(classic_est_epsilon, classic_est_sd) = est_epsilon(classic_ke[exp], classic_sd[exp], initial_kes[exp], epsilons[exp], initial_pes[exp])
+(nextgen_est_epsilon, nextgen_est_sd) = est_epsilon(nextgen_ke[exp], nextgen_sd[exp], initial_kes[exp], epsilons[exp], initial_pes[exp])
+
+# Note, for what it's worth, that the error bars aren't very meaningful .. we're not doing the
+# "correct" error analysis (not least because we're not accounting at all for the correlations
+# in the timeseries data)
+
+plt.errorbar(epsilons[exp], classic_est_epsilon, yerr=classic_est_sd, label='Classic MW')
+plt.errorbar(epsilons[exp], nextgen_est_epsilon, yerr=nextgen_est_sd, label='Next Gen MW')
+plt.plot(epsilons[exp], epsilons[exp], label='Expected value')
+
+plt.title("Experimental estimates of actual LJ epsilon from heat of fusion\n(note: these estimates are biased slightly low as epsilon increases)")
+plt.xlabel(r'epsilon (eV)')
+plt.ylabel(r'Measured value of epsilon (eV)')
 plt.legend(loc='lower center')
 plt.savefig('lj-epsilon-test', dpi=300)

@@ -173,20 +173,20 @@ if __name__ == "__main__":
   rmin = 2 ** (1./6) * sigma
   
   f = open("index.txt", "w")
-  f.write("model\tepsilon\tinitial KE\tapprox. final KE\n")
+  f.write("model\tepsilon\t\tinitial PE\tinitial KE\tapprox. final KE\n")
 
   for state in ('solid', 'gas'):
     for epsilon in np.linspace(0.01, 0.1, 5):
       
+      initial_pe = 2*pe(rmin, epsilon)
       if state == 'gas':
         final_ke = N * kB * 1000
-        initial_pe = 2*pe(rmin, epsilon)
         initial_ke = final_ke - initial_pe
       elif state == 'solid':
         initial_ke = 0
         final_ke = 0
 
-      f.write("{}\t{:.3f}\t{:.3f}\t{:.3f}\n".format(model_num, epsilon, initial_ke, final_ke))
+      f.write("{}\t{:.3f}\t{:.3f}\t{:.3f}\t{:.3f}\n".format(model_num, epsilon, initial_pe, initial_ke, final_ke))
 
       (X, Y) = positions(rmin)
 

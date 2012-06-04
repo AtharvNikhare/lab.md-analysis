@@ -27,6 +27,7 @@ for dataset in ('unmodified', 'modified'):
 
     time = map(get_time, lines)
     start = bisect.bisect_left(time, 100000)
+    #start = 0
 
     time = time[start:] 
     ke = map(get_ke, lines[start:])

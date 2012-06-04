@@ -84,7 +84,7 @@ for i in range(0, 5):
 
 # actually plot stuff
 
-plt.xlim(-0.5, 3.0)
+plt.xlim(-0.5, 15)
 
 plt.errorbar(initial_ke, classic_ke, yerr=classic_sd, label='Classic MW')
 plt.errorbar(initial_ke, nextgen_ke, yerr=nextgen_sd, label='Next Gen MW')

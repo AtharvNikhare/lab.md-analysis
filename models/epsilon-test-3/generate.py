@@ -2,7 +2,6 @@
 
 import math
 import numpy as np
-import scipy
 
 import pystache
 import os
@@ -14,8 +13,13 @@ JOULES_PER_EV = 1.6021770000000003e-19
 KILOGRAMS_PER_DALTON = 1.66054e-27
 MW_VELOCITY_UNITS_PER_METER_PER_SECOND = 1e-6
 
+# x, y grid position of atom i (0 <= i < nx*ny)
+SQRT_3_OVER_2 = math.sqrt(3)/2
+
+# Boltzmann constant
+kB = 8.6173423e-5   # eV/K
+
 # Define the elements
-epsilon = 0.1   # eV
 sigma = 0.07    # nm
 mass = 39.95    # g/mol (amu, Dalton)
 
@@ -23,11 +27,13 @@ mass = 39.95    # g/mol (amu, Dalton)
 height = 5.0      # nm
 width  = 5.0      # nm
 
-# Boltzmann constant
-kB = 8.6173423e-5   # eV/K
+# Organize particles into grid of nx x ny particles
+nx = 7
+ny = 7
+N = 2 * nx * ny
 
-# Lennard-Jones potential for squared pairwise separation rsq
-def lj(rsq, epsilon = epsilon, sigma = sigma):
+
+def lj(rsq, epsilon, sigma = sigma):
   """
   Lennard-Jones potential for squared pairwise separation = rsq
   """
@@ -35,13 +41,6 @@ def lj(rsq, epsilon = epsilon, sigma = sigma):
   beta  = 4 * epsilon * sigma ** 6
   return alpha * rsq ** -6 - beta * rsq ** -3
 
-# Organize particles into grid of nx x ny particles
-nx = 7
-ny = 7
-N = 2 * nx * ny
-
-# x, y grid position of atom i (0 <= i < nx*ny)
-SQRT_3_OVER_2 = math.sqrt(3)/2
 
 def grid_pos(i):
   """
@@ -57,7 +56,8 @@ def grid_pos(i):
 
   return (x, y)
 
-def pe(r):
+
+def pe(r, epsilon):
   """
   potential energy of nx * ny particles arranged in a hexagonal lattice
   with interparticle distance r
@@ -71,7 +71,7 @@ def pe(r):
       (xi, yi) = grid_pos(i)
       (xj, yj) = grid_pos(j)
       rsq = r * r * (abs(xi-xj) ** 2 + abs(yi-yj) ** 2)
-      pe += lj(rsq)
+      pe += lj(rsq, epsilon)
 
   return pe
 
@@ -126,7 +126,7 @@ def mkdir_p(path):
     else: raise
 
 
-def generate_mw_files(num, X, Y, VX, VY):
+def generate_mw_files(num, epsilon, X, Y, VX, VY):
   
   renderer = pystache.Renderer()
 
@@ -167,35 +167,39 @@ def convert_mml_file(num):
 if __name__ == "__main__":
 
   mkdir_p('classic')
-  mkdir_p('nextgen')
-  print "#\tsep (nm)\tPE (eV)\tKE (eV)\tTE (eV)"   
+  mkdir_p('nextgen') 
 
   model_num = 1
-  for T in np.linspace(0, 1000, 3):
+  rmin = 2 ** (1./6) * sigma
+  
+  f = open("index.txt", "w")
+  f.write("model\tepsilon\tinitial KE\tapprox. final KE\n")
 
-    final_ke = N * kB * T     # eV
+  for state in ('solid', 'gas'):
+    for epsilon in np.linspace(0.01, 0.1, 5):
+      
+      if state == 'gas':
+        final_ke = N * kB * 1000
+        initial_pe = 2*pe(rmin, epsilon)
+        initial_ke = final_ke - initial_pe
+      elif state == 'solid':
+        initial_ke = 0
+        final_ke = 0
 
-    rmin = 2 ** (1./6) * sigma
-    calculated_pe = 2*pe(rmin)
+      f.write("{}\t{:.3f}\t{:.3f}\t{:.3f}\n".format(model_num, epsilon, initial_ke, final_ke))
 
-    ke = final_ke - calculated_pe if T > 0 else 0
+      (X, Y) = positions(rmin)
 
-    (X, Y) = positions(rmin)
+      # some atoms headed down
+      topX = map( lambda x: x + width/2, X )
+      topY = map( lambda y: y + height/4, Y )
+      (topVX, topVY) = velocities(initial_ke/2, N/2, math.pi/2)
 
-    # some atoms headed down
-    topX = map( lambda x: x + width/2, X )
-    topY = map( lambda y: y + height/4, Y )
-    (topVX, topVY) = velocities(ke/2, N/2, math.pi/2)
+      # and some atoms headed up
+      bottomX = map( lambda x: x + width/2, X )
+      bottomY = map( lambda y: y + 3 * height/4, Y )
+      (bottomVX, bottomVY) = velocities(initial_ke/2, N/2, -math.pi/2)
 
-    # and some atoms headed up
-    bottomX = map( lambda x: x + width/2, X )
-    bottomY = map( lambda y: y + 3 * height/4, Y )
-    (bottomVX, bottomVY) = velocities(ke/2, N/2, -math.pi/2)
-
-    print "{}\t{:.6f}\t{:.4f}\t{:.4f}\t{:.4f}".format(
-      model_num, rmin, calculated_pe, ke, ke + calculated_pe
-    )
-
-    generate_mw_files(model_num, topX+bottomX, topY+bottomY, topVX+bottomVX, topVY+bottomVY)
-    convert_mml_file(model_num)
-    model_num += 1
+      generate_mw_files(model_num, epsilon, topX+bottomX, topY+bottomY, topVX+bottomVX, topVY+bottomVY)
+      convert_mml_file(model_num)
+      model_num += 1

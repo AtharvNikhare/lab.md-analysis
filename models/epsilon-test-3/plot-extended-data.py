@@ -18,7 +18,7 @@ index = open('index.txt').readlines()[1:]
 
 for index_line in index:
   if len(index_line) > 0:
-    (model_num, epsilon, initial_ke, final_ke) = index_line .split('\t')
+    (model_num, epsilon, initial_pe, initial_ke, final_ke) = index_line.split('\t')
 
     fname = 'nextgen/model{}.data.txt'.format(model_num)
     lines =  open(fname, 'r').readlines()

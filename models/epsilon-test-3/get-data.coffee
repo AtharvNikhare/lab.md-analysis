@@ -4,7 +4,7 @@ potentials = require '../../../src/md-engine/potentials'
 md2dLoader = require './lib/md2d-loader'
 fs         = require 'fs'
 
-totalTime = 100000
+totalTime = 41000
 
 runModel = (inFileName, outFileName, modifyModel) ->
   hash  = JSON.parse fs.readFileSync(inFileName).toString()

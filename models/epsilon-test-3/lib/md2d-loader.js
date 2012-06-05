@@ -18,7 +18,7 @@ createNewCoreModel = function(width, height, elements, config) {
   }
 
   coreModel.setElements(elemsArray);
-  coreModel.createAtoms(config);
+  coreModel.createAtoms({ num: config.X.length });
 
   coreModel.useLennardJonesInteraction(true);
   coreModel.useCoulombInteraction(false);

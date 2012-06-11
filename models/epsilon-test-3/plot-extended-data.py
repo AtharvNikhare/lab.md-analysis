@@ -32,7 +32,7 @@ for index_line in index:
     
     plt.xlabel("time (fs)")
     plt.ylabel("Energy (eV)")
-    plt.ylim(-2, 10)
+    plt.ylim(-2, 15)
 
     plt.plot(time, ke, label = "Kinetic Energy")
 

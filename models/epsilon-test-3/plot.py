@@ -107,7 +107,7 @@ plt.errorbar(epsilons[exp], classic_est_epsilon, yerr=classic_est_sd, label='Cla
 plt.errorbar(epsilons[exp], nextgen_est_epsilon, yerr=nextgen_est_sd, label='Next Gen MW')
 plt.plot(epsilons[exp], epsilons[exp], label='Expected value')
 
-plt.title("Experimental estimates of actual LJ epsilon from heat of fusion\n(note: these estimates are biased slightly low as epsilon increases)")
+plt.title("Experimental estimates of actual LJ epsilon from heat of fusion\n(LJ cutoff set to $2\sigma$ for both Classic and Next Gen)")
 plt.xlabel(r'epsilon (eV)')
 plt.ylabel(r'Measured value of epsilon (eV)')
 plt.legend(loc='lower center')

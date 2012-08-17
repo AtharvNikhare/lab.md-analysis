@@ -1,0 +1,1 @@
+data is formated in to columns the first column is kinetic eergy the second column is potential energy and the final column is total energy

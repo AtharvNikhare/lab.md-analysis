@@ -1,1 +1,5 @@
-data is formated in to columns the first column is kinetic eergy the second column is potential energy and the final column is total energy
+data is formated in to rows where the first row is kinetic eergy the second row is potential energy and the final row is total energy
+the first ellement of each row is an identifier e.g "classic_te"
+te = total energy
+pe = potential energy
+ke = kinetic energy
